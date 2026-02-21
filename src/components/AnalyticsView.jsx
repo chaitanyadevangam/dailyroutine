@@ -5,9 +5,26 @@ import Sparkline from './Sparkline';
 import './AnalyticsView.css';
 
 const AnalyticsView = ({ tasks }) => {
-    const [comment, setComment] = useState('');
     const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]); // YYYY-MM-DD
     const [viewMode, setViewMode] = useState('date'); // 'date', 'week', 'year'
+    const [historicalNote, setHistoricalNote] = useState('');
+    const [isLoadingNote, setIsLoadingNote] = useState(false);
+
+    useEffect(() => {
+        if (viewMode !== 'date' || !selectedDate) return;
+
+        setIsLoadingNote(true);
+        fetch(`/api/notes?date=${selectedDate}`)
+            .then(res => res.json())
+            .then(data => {
+                setHistoricalNote(data?.content || '');
+            })
+            .catch(err => {
+                console.error("Failed to load historical note", err);
+                setHistoricalNote('');
+            })
+            .finally(() => setIsLoadingNote(false));
+    }, [selectedDate, viewMode]);
 
     // Mock weekly data
     const weeklyData = [
@@ -182,15 +199,24 @@ const AnalyticsView = ({ tasks }) => {
                 <BentoBox glowColor="var(--accent-cyan)" className="bento-span-2">
                     <h3 className="bento-title mb-4">Task Consistency</h3>
                     <div className="task-analytics-list">
-                        {tasks.map(task => (
-                            <div key={task.id} className="task-analytic-row">
-                                <span className="task-analytic-name">{task.name}</span>
-                                <div className="task-analytic-chart">
-                                    <Sparkline data={[Math.random() * 10, Math.random() * 10, Math.random() * 10, Math.random() * 10, Math.random() * 10, Math.random() * 10, Math.random() * 10]} color={task.color || 'var(--accent-cyan)'} />
+                        {tasks.map(task => {
+                            // Calculate real consistency based on history array
+                            const historyData = Array.isArray(task.history) ? task.history : [0, 0, 0, 0, 0, 0, 0];
+                            const completedDays = historyData.filter(d => d > 0).length;
+                            // Add current day status to calculation
+                            const totalHits = completedDays + (task.status === 'done' ? 1 : 0);
+                            const consistencyScore = Math.round((totalHits / 8) * 100);
+
+                            return (
+                                <div key={task.id} className="task-analytic-row">
+                                    <span className="task-analytic-name">{task.name}</span>
+                                    <div className="task-analytic-chart">
+                                        <Sparkline data={[...historyData, task.status === 'done' ? 10 : 0]} color={task.color || 'var(--accent-cyan)'} />
+                                    </div>
+                                    <span className="task-analytic-score">{consistencyScore}%</span>
                                 </div>
-                                <span className="task-analytic-score">{Math.floor(Math.random() * 40 + 60)}%</span>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 </BentoBox>
 
@@ -219,14 +245,28 @@ const AnalyticsView = ({ tasks }) => {
 
                     <BentoBox glowColor="var(--accent-yellow)">
                         <h3 className="bento-title mb-2 flex-align-center" style={{ gap: '0.5rem' }}>
-                            <MessageSquare size={16} /> Selected Day Notes
+                            <MessageSquare size={16} /> Reflections for {selectedDate}
                         </h3>
-                        <textarea
-                            className="comment-box glass-panel text-dim"
-                            placeholder={`How did you feel about your routines on ${selectedDate}?`}
-                            value={comment}
-                            onChange={e => setComment(e.target.value)}
-                        />
+                        {isLoadingNote ? (
+                            <div style={{ color: 'var(--text-muted)', padding: '1rem', fontStyle: 'italic', textAlign: 'center' }}>Loading note...</div>
+                        ) : historicalNote ? (
+                            <div className="glass-panel text-dim" style={{
+                                width: '100%',
+                                minHeight: '100px',
+                                background: 'rgba(0,0,0,0.2)',
+                                border: '1px solid rgba(255,255,255,0.05)',
+                                borderRadius: '8px',
+                                padding: '1rem',
+                                color: 'var(--text-color)',
+                                whiteSpace: 'pre-wrap'
+                            }}>
+                                {historicalNote}
+                            </div>
+                        ) : (
+                            <div style={{ color: 'var(--text-muted)', padding: '1rem', fontStyle: 'italic', textAlign: 'center', background: 'rgba(0,0,0,0.1)', borderRadius: '8px' }}>
+                                No notes saved for this date.
+                            </div>
+                        )}
                     </BentoBox>
                 </div>
             </div>

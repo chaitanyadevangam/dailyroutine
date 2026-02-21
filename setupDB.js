@@ -18,6 +18,16 @@ async function setup() {
         `;
         console.log('✅ Table tasks created/verified successfully.');
 
+        await sql`
+            CREATE TABLE IF NOT EXISTS notes (
+                id SERIAL PRIMARY KEY,
+                date VARCHAR(20) UNIQUE NOT NULL,
+                content TEXT DEFAULT '',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        `;
+        console.log('✅ Table notes created/verified successfully.');
+
         // Check if empty, and maybe seed it with the default tasks for a good start
         const count = await sql`SELECT COUNT(*) FROM tasks`;
         if (parseInt(count[0].count) === 0) {

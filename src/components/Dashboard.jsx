@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { MessageSquare } from 'lucide-react';
 import BentoBox from './BentoBox';
 import CircularProgress from './CircularProgress';
 import TaskButton from './TaskButton';
@@ -10,19 +11,48 @@ const Dashboard = () => {
     const [newTaskName, setNewTaskName] = useState('');
     const [isLoading, setIsLoading] = useState(true);
 
+    // Notes state
+    const [todayNote, setTodayNote] = useState('');
+    const [isSavingNote, setIsSavingNote] = useState(false);
+
+    const currentDateStr = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+
     useEffect(() => {
-        // Fetch tasks on load
-        fetch('/api/tasks')
-            .then(res => res.json())
-            .then(data => {
-                if (Array.isArray(data)) setTasks(data);
-                setIsLoading(false);
+        // Fetch tasks and today's note on load
+        Promise.all([
+            fetch('/api/tasks').then(res => res.json()),
+            fetch(`/api/notes?date=${currentDateStr}`).then(res => res.json())
+        ])
+            .then(([tasksData, noteData]) => {
+                if (Array.isArray(tasksData)) setTasks(tasksData);
+                if (noteData && noteData.content) setTodayNote(noteData.content);
             })
             .catch(err => {
-                console.error("Failed to load tasks", err);
-                setIsLoading(false);
-            });
-    }, []);
+                console.error("Failed to load initial data", err);
+            })
+            .finally(() => setIsLoading(false));
+    }, [currentDateStr]);
+
+    // Handle Note saving with a simple debounce pattern
+    useEffect(() => {
+        if (isLoading) return; // Don't save on initial load
+
+        setIsSavingNote(true);
+        const timer = setTimeout(() => {
+            fetch('/api/notes', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ date: currentDateStr, content: todayNote })
+            })
+                .then(() => setIsSavingNote(false))
+                .catch(err => {
+                    console.error("Failed to save note:", err);
+                    setIsSavingNote(false);
+                });
+        }, 1000); // 1s debounce
+
+        return () => clearTimeout(timer);
+    }, [todayNote, currentDateStr, isLoading]);
 
     const updateTaskInDb = async (id, payload) => {
         try {
@@ -214,6 +244,35 @@ const Dashboard = () => {
                     </div>
                 </BentoBox>
             </div>
+
+            {/* Today's Notes Section (Moved from Analytics) */}
+            <BentoBox glowColor="var(--accent-yellow)" className="mb-4">
+                <div className="flex-between mb-2">
+                    <h3 className="bento-title flex-align-center" style={{ gap: '0.5rem', margin: 0 }}>
+                        <MessageSquare size={16} color="var(--accent-yellow)" /> Today's Notes
+                    </h3>
+                    <span style={{ fontSize: '0.8rem', color: isSavingNote ? 'var(--accent-pink)' : 'var(--text-muted)' }}>
+                        {isSavingNote ? 'Saving...' : 'Saved'}
+                    </span>
+                </div>
+                <textarea
+                    className="comment-box glass-panel text-dim"
+                    placeholder="How are you feeling today? Any reflections on your routines?"
+                    value={todayNote}
+                    onChange={e => setTodayNote(e.target.value)}
+                    style={{
+                        width: '100%',
+                        minHeight: '100px',
+                        background: 'rgba(0,0,0,0.2)',
+                        border: '1px solid rgba(255,255,255,0.05)',
+                        borderRadius: '8px',
+                        padding: '1rem',
+                        color: 'var(--text-color)',
+                        resize: 'vertical',
+                        outline: 'none'
+                    }}
+                />
+            </BentoBox>
 
             <AnalyticsView tasks={tasks} />
         </div>
