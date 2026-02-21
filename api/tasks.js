@@ -5,13 +5,44 @@ export default async function handler(req, res) {
 
     if (req.method === 'GET') {
         try {
-            const tasks = await sql`SELECT * FROM tasks ORDER BY created_at ASC`;
+            const todayStr = new Date().toISOString().split('T')[0];
+            let tasks = await sql`SELECT * FROM tasks ORDER BY created_at ASC`;
 
-            // Parse history from string back to array before sending to frontend
-            const formattedTasks = tasks.map(t => ({
-                ...t,
-                history: JSON.parse(t.history || '[0,0,0,0,0,0,0]')
-            }));
+            // Daily Reset Logic
+            const resetPromises = tasks.map(async (t) => {
+                let currentHistory = JSON.parse(t.history || '[0,0,0,0,0,0,0]');
+
+                if (t.last_reset !== todayStr) {
+                    const wasDone = t.status === 'done';
+
+                    // Shift history array (remove oldest day, push yesterday's result)
+                    currentHistory.shift();
+                    currentHistory.push(wasDone ? 10 : 0);
+
+                    // Reset status to pending, reset streak if missed
+                    const newStatus = 'pending';
+                    const newStreak = wasDone ? t.streak : 0;
+
+                    // Update task in DB
+                    await sql`
+                        UPDATE tasks 
+                        SET status = ${newStatus}, streak = ${newStreak}, history = ${JSON.stringify(currentHistory)}, last_reset = ${todayStr} 
+                        WHERE id = ${t.id}
+                    `;
+
+                    // Mutate the local object for the immediate response
+                    t.status = newStatus;
+                    t.streak = newStreak;
+                    t.history = currentHistory;
+                    t.last_reset = todayStr;
+                } else {
+                    t.history = currentHistory; // Just parse it
+                }
+
+                return t;
+            });
+
+            const formattedTasks = await Promise.all(resetPromises);
 
             return res.status(200).json(formattedTasks);
         } catch (error) {
@@ -24,8 +55,8 @@ export default async function handler(req, res) {
         try {
             const { name, color } = req.body;
             const newTask = await sql`
-                INSERT INTO tasks (name, color, status, streak, history)
-                VALUES (${name}, ${color || 'var(--accent-pink)'}, 'pending', 0, '[0,0,0,0,0,0,0]')
+                INSERT INTO tasks (name, color, status, streak, history, last_reset)
+                VALUES (${name}, ${color || 'var(--accent-pink)'}, 'pending', 0, '[0,0,0,0,0,0,0]', ${new Date().toISOString().split('T')[0]})
                 RETURNING *
             `;
 

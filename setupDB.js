@@ -13,6 +13,7 @@ async function setup() {
                 streak INTEGER DEFAULT 0,
                 color VARCHAR(50) DEFAULT 'var(--accent-cyan)',
                 history TEXT DEFAULT '[0,0,0,0,0,0,0]',
+                last_reset VARCHAR(20) DEFAULT '',
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         `;
@@ -27,6 +28,17 @@ async function setup() {
             )
         `;
         console.log('✅ Table notes created/verified successfully.');
+
+        // Migration: Add last_reset to existing tasks table if it doesn't exist
+        try {
+            await sql`ALTER TABLE tasks ADD COLUMN last_reset VARCHAR(20) DEFAULT ''`;
+            console.log('✅ Added last_reset column to tasks table.');
+        } catch (e) {
+            // Error code 42701 means column already exists
+            if (e.code !== '42701') {
+                console.error('Migration notice:', e.message);
+            }
+        }
 
         // Check if empty, and maybe seed it with the default tasks for a good start
         const count = await sql`SELECT COUNT(*) FROM tasks`;
