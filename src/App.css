@@ -1,0 +1,12 @@
+/* App.css - customized styles will be in components */
+.app-main {
+  width: 100vw;
+  min-height: 100vh;
+  padding: 2rem 1rem;
+}
+
+@media (min-width: 768px) {
+  .app-main {
+    padding: 3rem 2rem;
+  }
+}

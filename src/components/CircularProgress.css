@@ -1,0 +1,47 @@
+.circular-progress-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+}
+
+.circular-progress-svg {
+    transform: rotate(-90deg);
+}
+
+.circular-progress-fill {
+    transition: stroke-dashoffset 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.circular-progress-text {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.nearing-deadline .circular-progress-fill {
+    animation: pulse-stroke 2s infinite ease-in-out;
+}
+
+@keyframes pulse-stroke {
+    0% {
+        opacity: 1;
+        filter: drop-shadow(0 0 4px var(--accent-pink));
+    }
+
+    50% {
+        opacity: 0.5;
+        filter: drop-shadow(0 0 12px var(--accent-pink));
+    }
+
+    100% {
+        opacity: 1;
+        filter: drop-shadow(0 0 4px var(--accent-pink));
+    }
+}

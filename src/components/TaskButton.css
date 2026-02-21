@@ -1,0 +1,207 @@
+/* Update styles */
+.task-button-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.task-button {
+    width: 100%;
+    padding: 1rem 1.25rem;
+    text-align: left;
+    position: relative;
+    overflow: visible;
+    /* Changed from hidden to show dropdowns */
+    display: block;
+    color: var(--text-color);
+    transition: all 0.3s ease;
+}
+
+.task-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: relative;
+    z-index: 2;
+}
+
+.task-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex: 1;
+}
+
+.task-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.05);
+}
+
+.streak-count {
+    font-size: 0.7rem;
+    font-weight: bold;
+    margin-top: -2px;
+}
+
+.task-name {
+    font-size: 1.05rem;
+    font-weight: 500;
+    transition: all 0.5s ease;
+}
+
+.text-dim {
+    color: var(--text-muted);
+    opacity: 0.8;
+}
+
+.completed {
+    animation: glass-shimmer 1s ease-out forwards;
+    background: rgba(34, 197, 94, 0.05) !important;
+}
+
+.missed-task {
+    background: rgba(239, 68, 68, 0.05) !important;
+    border-color: rgba(239, 68, 68, 0.2) !important;
+}
+
+.shadow-glow {
+    box-shadow: 0 0 15px 0 var(--task-color), inset 0 0 10px 0 rgba(255, 255, 255, 0.05);
+    border-color: var(--task-color);
+}
+
+@keyframes glass-shimmer {
+    0% {
+        box-shadow: 0 0 30px var(--task-color);
+    }
+
+    100% {}
+}
+
+.task-right-section {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.task-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.action-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-color);
+    transition: all 0.2s ease;
+}
+
+.action-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.action-tick {
+    color: #22C55E;
+}
+
+.action-tick:hover {
+    background: rgba(34, 197, 94, 0.15);
+    box-shadow: 0 0 10px rgba(34, 197, 94, 0.3);
+}
+
+.action-cross {
+    color: #EF4444;
+}
+
+.action-cross:hover {
+    background: rgba(239, 68, 68, 0.15);
+    box-shadow: 0 0 10px rgba(239, 68, 68, 0.3);
+}
+
+.status-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 99px;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.badge-done {
+    background: rgba(34, 197, 94, 0.1);
+    color: #22C55E;
+    border: 1px solid rgba(34, 197, 94, 0.2);
+}
+
+.badge-missed {
+    background: rgba(239, 68, 68, 0.1);
+    color: #EF4444;
+    border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.context-menu-dropdown {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 5px);
+    width: 120px;
+    background: rgba(15, 23, 42, 0.95);
+    border: 1px solid var(--glass-border);
+    border-radius: 8px;
+    padding: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    z-index: 50;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 0 15px rgba(0, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+}
+
+.menu-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+    padding: 0.5rem;
+    background: transparent;
+    border: none;
+    color: var(--text-color);
+    font-size: 0.85rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: left;
+}
+
+.menu-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.menu-item-danger {
+    color: #ef4444;
+}
+
+.menu-item-danger:hover {
+    background: rgba(239, 68, 68, 0.15);
+}
+
+.edit-task-input {
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid var(--accent-cyan);
+    color: var(--text-color);
+    font-size: 1.05rem;
+    font-weight: 500;
+    outline: none;
+    padding: 0.2rem 0;
+    width: 100%;
+}

@@ -1,0 +1,11 @@
+.bento-box {
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.bento-box:hover {
+    transform: translateY(-2px);
+    background: var(--glass-hover);
+}
